@@ -1,8 +1,11 @@
 package fr.fullstack.shopapp.service;
 
+import fr.fullstack.shopapp.model.OpeningHoursShop;
 import fr.fullstack.shopapp.model.Product;
 import fr.fullstack.shopapp.model.Shop;
 import fr.fullstack.shopapp.repository.ShopRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.hibernate.search.mapper.orm.Search;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -10,12 +13,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
+
+
+@Slf4j
 @Service
 public class ShopService {
     @PersistenceContext
@@ -27,6 +33,14 @@ public class ShopService {
     @Transactional
     public Shop createShop(Shop shop) throws Exception {
         try {
+            List<OpeningHoursShop> existingHours = shop.getOpeningHours();
+            for (OpeningHoursShop newHours : shop.getOpeningHours()) {
+                for (OpeningHoursShop existingHour : existingHours) {
+                    if (newHours != existingHour && isOverlapping(newHours, existingHour) && existingHour.getDay() == newHours.getDay()) {
+                        throw new RuntimeException("horairs se chevauchent!");
+                    }
+                }
+            }
             Shop newShop = shopRepository.save(shop);
             // Refresh the entity after the save. Otherwise, @Formula does not work.
             em.flush();
@@ -164,5 +178,17 @@ public class ShopService {
         }
 
         return null;
+    }
+
+    private boolean isOverlapping(OpeningHoursShop hours1, OpeningHoursShop hours2){
+        LocalTime start1 = hours1.getOpenAt();
+        LocalTime end1 = hours1.getCloseAt();
+        LocalTime start2 = hours2.getOpenAt();
+        LocalTime end2 = hours2.getCloseAt();
+/*        log.info("start 1  " +start1+ "\n");
+        log.info("end 1  " +end1 + "\n");
+        log.info("start 2  " +start2+ "\n");
+        log.info("end 2  " +end2 + "\n");*/
+        return start1.isBefore(end2) && start2.isBefore(end1);
     }
 }

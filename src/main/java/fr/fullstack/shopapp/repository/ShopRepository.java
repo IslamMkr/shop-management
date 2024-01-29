@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.time.LocalDate;
 
 public interface ShopRepository extends JpaRepository<Shop, Long> {
+
     Page<Shop> findByCreatedAtBetween(LocalDate dateStart, LocalDate dateEnd, Pageable pageable);
 
     Page<Shop> findByCreatedAtGreaterThan(LocalDate date, Pageable pageable);

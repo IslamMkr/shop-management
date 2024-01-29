@@ -1,7 +1,8 @@
 package fr.fullstack.shopapp.validation;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,12 +28,13 @@ public class StringEnumerationValidator implements ConstraintValidator<StringEnu
     }
 
     @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
-        if (value == null) {
+    public boolean isValid(String string, ConstraintValidatorContext constraintValidatorContext) {
+        if (string == null) {
             return true;
         } else {
-            return AVAILABLE_ENUM_NAMES.contains(value);
+            return AVAILABLE_ENUM_NAMES.contains(string);
         }
     }
+
 
 }
